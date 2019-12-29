@@ -5,19 +5,23 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
+#include "mtcp.h"
+
+#include "spiffy.h"
 
 #define PACKETLEN 1500
 #define BUFLEN 100
 
-typedef struct header_s {
-  short magicnum;
-  char version;
-  char packet_type;
-  short header_len;
-  short packet_len; 
-  u_int seq_num;
-  u_int ack_num;
-} header_t;  
+// typedef struct header_s {
+//   short magicnum;
+//   char version;
+//   char packet_type;
+//   short header_len;
+//   short packet_len; 
+//   u_int seq_num;
+//   u_int ack_num;
+// } header_t;  
 
 typedef struct data_packet {
   header_t header;
@@ -34,8 +38,9 @@ int main(int argc, char **argv) {
   data_packet_t packet;
 
   assert(fd != 0);
-  if (argc < 4) {
-    printf("usage: %s <node id> <my port> <to port> <magic number>\n", argv[0]);
+  if (argc < 6) {
+    // printf("usage: %s <node id> <my port> <to port> <magic number>\n", argv[0]);
+    printf("usage: %s <node id> <my port> <to port> <magic number> <seq num> <ack num>\n", argv[0]);
     return 1;
   }
 
@@ -55,9 +60,18 @@ int main(int argc, char **argv) {
   packet.header.magicnum = htons(atoi(argv[4]));
   memset(&(packet.data), 0, BUFLEN);  
 
+  // for debug
+  packet.header.version = 'A';
+  packet.header.packet_type = 'B';
+  packet.header.seq_num = htons(atoi(argv[5]));
+  packet.header.ack_num = htons(atoi(argv[6]));
+  packet.header.header_len = sizeof(packet.header);
+
   spiffy_sendto(fd, &packet, sizeof(data_packet_t), 0, (struct sockaddr *) &toaddr, sizeof(toaddr));
 
-  printf("Sent MAGIC: %d\n", atoi(argv[4]));
+  // printf("Header sent: %d\n", atoi(argv[4]));
+  printf("Header sent:\n");
+  print_header(packet.header);
 
   return 0;
 }

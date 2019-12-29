@@ -20,7 +20,7 @@ sub new ($) {
 	$self->{'max'} = shift || $QUEUEMAX;
 
 	$self->{'size'} = 0;
-	$self->{'verbose'} = 0;
+	$self->{'verbose'} = 4;
 	$self->{'dropped'} = 0;
 
 	$self->{'queue'} = [];

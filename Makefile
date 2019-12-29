@@ -29,6 +29,13 @@ peer: $(OBJS)
 make-chunks: $(MK_CHUNK_OBJS)
 	$(CC) $(CFLAGS) $(MK_CHUNK_OBJS) -o $@ $(LDFLAGS)
 
+server: server.c spiffy.c
+	gcc -g server.c spiffy.c debug.c -o server
+client: client.c spiffy.c
+	gcc -g client.c spiffy.c debug.c -o client
+
+
+
 clean:
 	rm -f *.o $(BINS) $(TESTBINS)
 
@@ -44,8 +51,5 @@ test_debug.o: debug.c debug-text.h
 
 test_input_buffer:  test_input_buffer.o input_buffer.o
 
-server: server.c spiffy.c
-	gcc -g server.c spiffy.c -o server
-client: client.c spiffy.c
-	gcc -g client.c spiffy.c -o client
+
 

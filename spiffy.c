@@ -106,6 +106,7 @@ int spiffy_init(long lNodeID, const struct sockaddr *addr, socklen_t addrlen)
 {
 
     char *cSpiffyName = NULL;
+    // char *cSpiffyName = "127.0.0.1:12345";
     char *cColon = NULL;
 
     cSpiffyName = getenv("SPIFFY_ROUTER");

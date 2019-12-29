@@ -3,7 +3,7 @@
 
 #include <stdio.h>  /* for perror */
 #include <sys/types.h>
-
+#include "config.h"
 #ifdef DEBUG
 extern unsigned int debug;
 #define DPRINTF(level, fmt, args...) \
@@ -29,6 +29,12 @@ extern unsigned int debug;
 #define DEBUG_SPIFFY    0x10    // DBTEXT:  Debug the spiffy sending code
 
 #define DEBUG_ALL  0xffffffff
+
+
+/** print out information of received header
+ */
+void print_header(header_t header);
+
 
 #ifdef __cplusplus
 extern "C" {

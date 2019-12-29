@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "mtcp.h"
 
 unsigned int debug = 0;
 
@@ -44,6 +45,24 @@ int set_debug(char *arg) {
     debug |= atoi(arg);
   }
   return 0;
+}
+
+/** print out information of received header
+ */
+void print_header(header_t header)
+{
+    printf("MAGIC: %d\n", ntohs((header).magicnum));
+    printf("Version: %c\n", header.version);
+    
+    char *type = decode_packet_type(header.packet_type);
+    printf("packet_type: %s\n", type);
+    free(type);
+
+    printf("header length:%d\n", ntohs(header.header_len));
+    printf("packet length: %d\n", ntohs(header.packet_len));
+    printf("sequence number: %d\n", ntohs(header.seq_num));
+    printf("ACK number: %d\n", ntohs(header.ack_num));
+    fflush(stdout);
 }
 
 #ifdef _TEST_DEBUG_

@@ -6,40 +6,24 @@
 #include <sys/types.h>
 
 #include "spiffy.h"
+#include "mtcp.h"
 
 #define PACKETLEN 1500
 #define BUFLEN 100
 
-typedef struct header_s
-{
-    short magicnum;
-    char version;
-    char packet_type;
-    short header_len;
-    short packet_len;
-    u_int seq_num;
-    u_int ack_num;
-} header_t;
+// typedef struct header_s
+// {
+//     short magicnum;
+//     char version;
+//     char packet_type;
+//     short header_len;
+//     short packet_len;
+//     u_int seq_num;
+//     u_int ack_num;
+// } header_t;
 
-typedef struct data_packet
-{
-    header_t header;
-    char data[BUFLEN];
-} data_packet_t;
 
-/** print out information of received header
- */
-void print_header(header_t header)
-{
-    printf("MAGIC: %d\n", ntohs((header).magicnum));
-    printf("Version: %c\n", header.version);
-    printf("packet_type: %c\n", header.packet_type);
-    printf("header length:%d\n", ntohs(header.header_len));
-    printf("packet length: %d\n", ntohs(header.packet_len));
-    printf("sequence number: %d\n", ntohs(header.seq_num));
-    printf("ACK number: %d\n", ntohs(header.ack_num));
-    fflush(stdout);
-}
+
 
 int main(int argc, char **argv)
 {
@@ -61,7 +45,7 @@ int main(int argc, char **argv)
     bzero(&myaddr, sizeof(myaddr));
     myaddr.sin_family = AF_INET;
     inet_aton("127.0.0.1", &myaddr.sin_addr);
-    argv[2] = "2333"; // for debug
+    argv[2] = "48001"; // for debug
     myaddr.sin_port = htons(atoi(argv[2]));
     // myaddr.sin_port = 2333;
 
@@ -89,6 +73,7 @@ int main(int argc, char **argv)
             // printf("MAGIC: %d\n", ntohs((curr->header).magicnum));
             // printf("Version: %c\n", curr->header.version);
             // printf("packet_type: %c\n", curr->header.packet_type);
+            printf("Header received:\n");
             print_header(curr->header);
 
             

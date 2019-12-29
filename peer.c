@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <sys/select.h>
 
+#include "config.h"
+
 void peer_run(bt_config_t *config);
 
 int main(int argc, char **argv)
@@ -51,6 +53,9 @@ int main(int argc, char **argv)
     return 0;
 }
 
+/**
+ * core logic of TCP based on UDP: the reliability, congestion control logic goes here
+ */
 void process_inbound_udp(int sock)
 {
 #define BUFLEN 1500
@@ -61,17 +66,25 @@ void process_inbound_udp(int sock)
     fromlen = sizeof(from);
     spiffy_recvfrom(sock, buf, BUFLEN, 0, (struct sockaddr *)&from, &fromlen);
 
+    data_packet_t * udp_packet = (data_packet_t *)buf;      // analyze the data
+    // TODO: write code to process received UDP packet: seq_num, ack_num etc.
     printf("PROCESS_INBOUND_UDP SKELETON -- replace!\n"
            "Incoming message from %s:%d\n%s\n\n",
            inet_ntoa(from.sin_addr), ntohs(from.sin_port), buf);
 }
 
+/**
+ * function to handle GET command, to be finished
+ */
 void process_get(char *chunkfile, char *outputfile)
 {
+    //TODO: finish the logic behind GET query--process hash and compare it with maps
     printf("PROCESS GET SKELETON CODE CALLED.  Fill me in!  (%s, %s)\n",
            chunkfile, outputfile);
 }
 
+/** function to handle user command input, classify it into different type and run
+ */
 void handle_user_input(char *line, void *cbdata)
 {
     char chunkf[128], outf[128];
@@ -79,6 +92,7 @@ void handle_user_input(char *line, void *cbdata)
     bzero(chunkf, sizeof(chunkf));
     bzero(outf, sizeof(outf));
 
+    //TODO: add code for other command (extra function)
     if (sscanf(line, "GET %120s %120s", chunkf, outf))
     {
         if (strlen(outf) > 0)
@@ -140,6 +154,7 @@ void peer_run(bt_config_t *config)
 
             if (FD_ISSET(STDIN_FILENO, &readfds))
             {
+                // user command input
                 process_user_input(STDIN_FILENO, userbuf, handle_user_input,
                                    "Currently unused");
             }
