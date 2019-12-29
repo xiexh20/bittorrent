@@ -11,6 +11,10 @@
 #include <sys/types.h>
 
 
+#define TRUE 1
+#define FALSE 0
+
+#define WINDOW_SIZE 8   // next-acked
 
 #endif /* _CONFIG_H_ */
 

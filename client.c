@@ -38,34 +38,38 @@ int main(int argc, char **argv) {
   data_packet_t packet;
 
   assert(fd != 0);
-  if (argc < 6) {
+  if (argc < 4) {
     // printf("usage: %s <node id> <my port> <to port> <magic number>\n", argv[0]);
-    printf("usage: %s <node id> <my port> <to port> <magic number> <seq num> <ack num>\n", argv[0]);
+    printf("usage: %s <magic number> <seq num> <ack num> <type>\n", argv[0]);
     return 1;
   }
 
   bzero(&myaddr, sizeof(myaddr));
   myaddr.sin_family = AF_INET;
   inet_aton("127.0.0.1", &myaddr.sin_addr);
-  myaddr.sin_port = htons(atoi(argv[2]));
+  // myaddr.sin_port = htons(atoi(argv[2]));
+  myaddr.sin_port = htons(atoi("48002"));
   assert(bind(fd, (struct sockaddr *) &myaddr, sizeof(myaddr)) >= 0);
 
   /* init spiffy */
-  spiffy_init(atoi(argv[1]), &myaddr, sizeof(myaddr));
+  // spiffy_init(atoi(argv[1]), &myaddr, sizeof(myaddr));
+  spiffy_init(atoi("2"), &myaddr, sizeof(myaddr));
 
   inet_aton("127.0.0.1", &toaddr.sin_addr);
-  toaddr.sin_port = htons(atoi(argv[3]));
+  // toaddr.sin_port = htons(atoi(argv[3]));
+  toaddr.sin_port = htons(atoi("48001"));
   toaddr.sin_family = AF_INET;
   
-  packet.header.magicnum = htons(atoi(argv[4]));
+  packet.header.magicnum = htons(atoi(argv[1]));
   memset(&(packet.data), 0, BUFLEN);  
 
   // for debug
   packet.header.version = 'A';
   packet.header.packet_type = 'B';
-  packet.header.seq_num = htons(atoi(argv[5]));
-  packet.header.ack_num = htons(atoi(argv[6]));
+  packet.header.seq_num = htons(atoi(argv[2]));
+  packet.header.ack_num = htons(atoi(argv[3]));
   packet.header.header_len = sizeof(packet.header);
+  packet.header.packet_type = *argv[4] - '0';   // read a char
 
   spiffy_sendto(fd, &packet, sizeof(data_packet_t), 0, (struct sockaddr *) &toaddr, sizeof(toaddr));
 

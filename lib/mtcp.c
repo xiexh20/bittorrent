@@ -37,3 +37,43 @@ char * decode_packet_type(char code)
     return type;
 
 }
+
+// callback functions used for packet list
+/** deep copy a packet
+ */
+void *packet_copy(void *src_element)
+{
+    data_packet_t * tmp = (data_packet_t*) src_element;
+    data_packet_t *new_packet = malloc(sizeof(data_packet_t));
+    new_packet->ts = tmp->ts;       // long type, copy directly
+    new_packet->header = tmp->header;       // TODO: is this a deep copy?
+
+    new_packet->data = malloc(DATALEN*sizeof(char));
+    memcpy(new_packet->data, tmp->data, DATALEN);   
+    // FIXME: copy data correctly
+    return new_packet;
+}
+/** free memory of a packet
+ */
+void packet_free(void **element)
+{
+    data_packet_t * tmp = (data_packet_t*) (*element);
+    free(tmp->data);
+    free(tmp);
+}
+/** 
+ * compare two packet based on sequence number
+ */
+int packet_comp(void *x, void *y)
+{
+    data_packet_t * x1 = (data_packet_t*) x;
+    data_packet_t * y1 = (data_packet_t*) y;
+
+    if(x1->header.seq_num<y1->header.seq_num){
+        return -1;
+    }
+    else if(x1->header.seq_num > y1->header.seq_num){
+        return 1;
+    }
+    return 0;
+}

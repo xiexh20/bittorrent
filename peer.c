@@ -21,8 +21,46 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/select.h>
+#include <time.h>
 
 #include "config.h"
+#include "lib/dplist.h"
+#include "lib/mtcp.h"
+
+// typedef struct packet_info
+// {
+//     time_t ts;      // the time when packet is send-> timeout packet will be retransmitted
+//     seqnr_t seqnr;      // sequence number of the packet
+//     // char acks;         // number of ACKs received for this packet, 0: unacked
+// }packet_info_t;
+
+
+typedef struct peer_node
+{
+    int id;     // peer id in nodes.map
+    u_int32_t port;  // peer port number in nodes.map
+    char in_trans;      // 1: transmitting data with this node FIXME: other status?
+    u_int32_t rtdelay;      // round trip delay in us TODO: implement sampleRTT to estimate RTT
+    seqnr_t send_base;    // sequence number of the oldest unacknowledged packet
+    seqnr_t next_send;    // sequence number of next packet
+    seqnr_t last_ack;     // last acked packet, for out of order packets
+    char acks;              // number of acks received: three duplicate ACKs will trigger fast retransmission
+    acknr_t next_expect;  // expected sequence number of next packet, ack_num in receiver ACK packet, cumulative ack
+    dplist_t *sent_packets;       // timestamps and sequence number pf sent packets
+    dplist_t *recv_packets;          // received packets
+}peer_node_t;
+
+
+
+// golabl variables for this file
+dplist_t * peer_list = NULL;        // a list of all peers
+
+
+// callback functions for peer_list
+void *peer_node_copy(void *src_element); 
+void peer_node_free(void **element);
+int peer_node_comp(void *x, void *y);
+
 
 void peer_run(bt_config_t *config);
 
@@ -31,6 +69,9 @@ int main(int argc, char **argv)
     bt_config_t config;
 
     bt_init(&config, argc, argv); // configure map, chunks, file location etc.
+
+    // my own variables init
+    peer_list = dpl_create(&peer_node_copy, &peer_node_free, &peer_node_comp);
 
     DPRINTF(DEBUG_INIT, "peer.c main beginning\n");
 
@@ -149,7 +190,7 @@ void peer_run(bt_config_t *config)
         {
             if (FD_ISSET(sock, &readfds))
             {
-                process_inbound_udp(sock);  // data from socket
+                process_inbound_udp(sock);  // data from socket: IP:port, stateless
             }
 
             if (FD_ISSET(STDIN_FILENO, &readfds))
@@ -160,4 +201,35 @@ void peer_run(bt_config_t *config)
             }
         }
     }
+}
+
+
+// callback functions for peer_list
+void *peer_node_copy(void *src_element)
+{
+    peer_node_t *tmp = (peer_node_t*) src_element;
+    peer_node_t * new_node = malloc(sizeof(peer_node_t));
+    new_node->id = tmp->id;
+    new_node->port = tmp->port;
+    new_node->in_trans = tmp->in_trans;
+
+    return new_node;
+}
+void peer_node_free(void **element)
+{
+    peer_node_t *tmp = (peer_node_t*) (*element);
+    free(tmp);
+}
+int peer_node_comp(void *x, void *y)
+{
+    peer_node_t* x1 = (peer_node_t*)x;
+    peer_node_t* y1 = (peer_node_t*)y;
+
+    if(x1->id<y1->id){
+        return -1;
+    }
+    else if(x1->id>y1->id){
+        return 1;
+    }
+    return 0;
 }

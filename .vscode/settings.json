@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "mtcp.h": "c"
+        "mtcp.h": "c",
+        "config.h": "c",
+        "socket.h": "c",
+        "in.h": "c"
     }
 }

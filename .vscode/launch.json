@@ -8,8 +8,8 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/server",
-            "args": [],
+            "program": "${workspaceFolder}/test_mtcp",
+            "args": ["2", "48002", "48001", "123", "99", "200", "2"],
             "cwd": "${workspaceFolder}"
         }
     ]

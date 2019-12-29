@@ -9,6 +9,10 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <time.h>
+
+typedef u_int seqnr_t;    // sequence number type
+typedef u_int acknr_t;  // ACK number type
 
 typedef struct header_s {
   short magicnum;
@@ -22,11 +26,14 @@ typedef struct header_s {
 
 
 #define BUFLEN 100
+#define DATALEN 13  // maximum data length
 
 typedef struct data_packet
 {
     header_t header;
-    char data[BUFLEN];
+    // char data[BUFLEN];
+    char *data;
+    time_t ts;    // the timestamp when the packet was sent
 } data_packet_t;
 
 
@@ -35,5 +42,10 @@ typedef struct data_packet
 /** return a string indicating the type of an integer
  */
 char * decode_packet_type(char code);
+
+// callback functions used for packet list
+void *packet_copy(void *src_element); 
+void packet_free(void **element);
+int packet_comp(void *x, void *y);
 
 #endif
