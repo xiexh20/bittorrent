@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-#include "mtcp.h"
+#include "lib/mtcp.h"
 
-#include "spiffy.h"
+#include "lib/spiffy.h"
 
 #define PACKETLEN 1500
 #define BUFLEN 100
@@ -23,10 +23,10 @@
 //   u_int ack_num;
 // } header_t;  
 
-typedef struct data_packet {
-  header_t header;
-  char data[BUFLEN];
-} data_packet_t;
+// typedef struct data_packet {
+//   header_t header;
+//   char data[BUFLEN];
+// } data_packet_t;
 
 
 int main(int argc, char **argv) {

@@ -21,6 +21,8 @@ typedef struct header_s {
 } header_t;  
 
 
+#define BUFLEN 100
+
 typedef struct data_packet
 {
     header_t header;

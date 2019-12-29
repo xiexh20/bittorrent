@@ -3,7 +3,7 @@
 
 #include <stdio.h>  /* for perror */
 #include <sys/types.h>
-#include "config.h"
+#include "mtcp.h"
 #ifdef DEBUG
 extern unsigned int debug;
 #define DPRINTF(level, fmt, args...) \

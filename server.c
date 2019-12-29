@@ -5,8 +5,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include "spiffy.h"
-#include "mtcp.h"
+#include "lib/spiffy.h"
+#include "lib/mtcp.h"
 
 #define PACKETLEN 1500
 #define BUFLEN 100
