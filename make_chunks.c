@@ -6,8 +6,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "sha.h"
-#include "chunk.h"
+#include "lib/sha.h"
+#include "lib/chunk.h"
 
 static int get_numchunks(char *);
 

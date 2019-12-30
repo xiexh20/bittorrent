@@ -37,7 +37,7 @@ struct bt_config_s {
   int argc; 
   char **argv;
 
-  bt_peer_t *peers;   // a list of peers in the BitTorrent network
+  bt_peer_t *peers;   // a list of peers in the BitTorrent network, is this necessary?
 };
 typedef struct bt_config_s bt_config_t;
 

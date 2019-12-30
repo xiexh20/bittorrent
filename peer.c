@@ -21,9 +21,9 @@
 #include "config.h"
 #include "lib/dplist.h"
 #include "lib/mtcp.h"
-#include "bt_parse.h"
+#include "lib/bt_parse.h"
 #include "lib/debug.h"
-#include "input_buffer.h"
+#include "lib/input_buffer.h"
 #include "lib/spiffy.h"
 
 // typedef struct packet_info
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 void process_inbound_udp(int sock)
 {
 #define BUFLEN 1500
-    struct sockaddr_in from;
+    struct sockaddr_in from;       // these information will be used to process the packet: peer_info
     socklen_t fromlen;
     char buf[BUFLEN];
 

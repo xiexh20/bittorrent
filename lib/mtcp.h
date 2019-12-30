@@ -23,6 +23,7 @@ typedef struct buf_packet
 typedef struct mtcp_conn
 {
     // information to maintain a TCP connection
+    struct sockaddr_in socket;  //IP:port
     u_int32_t rtdelay;      // round trip delay in us TODO: implement sampleRTT to estimate RTT
     seqnr_t send_base;      // sequence number of the oldest unacknowledged packet
     seqnr_t next_send;      // sequence number of next packet
@@ -60,7 +61,7 @@ int mtcp_send_packet(mtcp_conn_t* conn, data_packet_t* data_packet);
  * 
  * new data transmission is initialized by the higher level process
  */
-int mtcp_process_ack(mtcp_conn_t* conn, data_packet_t* ack_packet);
+int mtcp_process_ack(mtcp_conn_t* conn, ack_packet_t* ack_packet);
 
 /* sender side functions end*/
 
@@ -74,7 +75,7 @@ int mtcp_process_data(mtcp_conn_t* conn, data_packet_t* data_packet);
 /**
  * send an ACK packet, this function should only be called within mtcp.h
  */
-int mtcp_send_ack(mtcp_conn_t* conn, data_packet_t* ack_packet);
+int mtcp_send_ack(mtcp_conn_t* conn, ack_packet_t* ack_packet);
 /* receiver side functions end */
 
 

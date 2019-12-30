@@ -1,4 +1,4 @@
-#include "input_buffer.h"
+#include "lib/input_buffer.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

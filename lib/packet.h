@@ -2,13 +2,15 @@
 #define _PACKET_H
 
 #include <sys/types.h>
+#include <inttypes.h>
 
 //datatype of mtcp packet
 typedef uint32_t seqnr_t;    // sequence number type
 typedef uint32_t acknr_t;  // ACK number type
 
 #define BUFLEN 100
-#define DATALEN 1300  // maximum data length
+#define DATALEN 1000  // maximum data length
+#define ACK_DATALEN 10  // payload of ack packet
 #define TYPE_LEN 10  // max length of the type string
 
 typedef struct header_s {
@@ -25,9 +27,15 @@ typedef struct data_packet
 {
     header_t header;
     // char data[BUFLEN];
-    char data[DATALEN];
+    uint8_t data[DATALEN];
     // time_t ts;    // the timestamp when the packet was sent
 } data_packet_t;
+
+typedef struct ack_packet
+{
+    header_t header;
+    char data[ACK_DATALEN];     // use a different size of data compared to data packet, to save memory space
+}ack_packet_t;
 
 
 /** return a string indicating the type of an integer
