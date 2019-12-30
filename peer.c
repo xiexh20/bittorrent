@@ -25,13 +25,7 @@
 #include "lib/debug.h"
 #include "lib/input_buffer.h"
 #include "lib/spiffy.h"
-
-// typedef struct packet_info
-// {
-//     time_t ts;      // the time when packet is send-> timeout packet will be retransmitted
-//     seqnr_t seqnr;      // sequence number of the packet
-//     // char acks;         // number of ACKs received for this packet, 0: unacked
-// }packet_info_t;
+#include "lib/mbt.h"
 
 
 typedef struct peer_node
@@ -43,10 +37,10 @@ typedef struct peer_node
 }peer_node_t;
 
 
-
 // golabl variables for this file
 dplist_t * peer_list = NULL;        // a list of all peers
-
+dplist_t * send_buffers = NULL;     // a list of chunk_request_t, for sender to maintain a list of uploading chunks
+dplist_t * recv_buffers = NULL;     // a list of chunk_request_t, for receiver to maintain a list of downloading chunks
 
 // callback functions for peer_list
 void *peer_node_copy(void *src_element); 
@@ -89,7 +83,7 @@ int main(int argc, char **argv)
 /**
  * core logic of TCP based on UDP: the reliability, congestion control logic goes here
  */
-void process_inbound_udp(int sock)
+void process_inbound_udp(int sock, bt_config_t * config)
 {
 #define BUFLEN 1500
     struct sockaddr_in from;       // these information will be used to process the packet: peer_info
@@ -105,25 +99,49 @@ void process_inbound_udp(int sock)
            "Incoming message from %s:%d\n%s\n\n",
            inet_ntoa(from.sin_addr), ntohs(from.sin_port), buf);
 
+    bt_peer_t * peer = find_peer_by_port(config, from.sin_port);        // get peer information
+    
     switch (udp_packet->header.packet_type)
     {
     case 0:
         // WHOHAS
+        mbt_process_whohas(config, peer, udp_packet);
         break;
     case 1:
-        //IHAVE
-        break;
-    case 2:
-        // GET request
-        break;
-    case 3:
-        // DATA
-
-        break;
-    case 4: 
-        // ACK
+        {
+            //IHAVE
+            chunk_request_t * down_request = NULL;
+            mbt_process_ihave(peer, down_request, udp_packet);
+            
+            // TODO:  check return status,
+            dpl_insert_at_index(recv_buffers, down_request, 0, 0);
+            break;
+        }
         
-        break;
+    case 2:
+        {
+            // GET request
+            chunk_request_t * send_buf = NULL;
+            mbt_process_get(config, peer, send_buf, udp_packet);
+
+            // TODO: check return status
+            dpl_insert_at_index(send_buffers, send_buf, 0, 0);
+            break;
+        }
+    case 3:
+        {// DATA
+            chunk_request_t * recv_buf;
+            // TODO: some functions to find correct recv_buf from recv_buffers
+            mbt_process_data(recv_buf, udp_packet);
+            break;
+        }
+    case 4: 
+        {// ACK
+            chunk_request_t * send_buf;
+            //TODO: function to find correct send_buf from send_buffers
+            mbt_process_data(send_buf, udp_packet);
+            break;
+        }
     case 5:
         // DENIED
         break;
@@ -131,6 +149,8 @@ void process_inbound_udp(int sock)
         printf("Not defined packet type, posibbly due to bit error.\n");
         break;
     }
+
+    
 }
 
 /**
@@ -209,7 +229,7 @@ void peer_run(bt_config_t *config)
         {
             if (FD_ISSET(sock, &readfds))
             {
-                process_inbound_udp(sock);  // data from socket: IP:port, stateless
+                process_inbound_udp(sock, config);  // data from socket: IP:port, stateless
             }
 
             if (FD_ISSET(STDIN_FILENO, &readfds))
@@ -219,6 +239,12 @@ void peer_run(bt_config_t *config)
                                    "Currently unused");
             }
         }
+
+        // TODO: functions to check timeout of TCP sent packet (no ACK after long time)
+        // time out of a GET request: check chunk_reqeust.ts, if the buffer is still empty and timeout, resend GET request
+        // timeout of a data packet in a TCP connection: check the ACK status of the packet with smallest seq num, if not yet ACKed, resend
+        
+        // TODO: send data packet to all established connections
     }
 }
 

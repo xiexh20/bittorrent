@@ -46,6 +46,13 @@ void bt_init(bt_config_t *c, int argc, char **argv);
 void bt_parse_command_line(bt_config_t *c);
 void bt_parse_peer_list(bt_config_t *c);
 void bt_dump_config(bt_config_t *c);
+
+/** find peer by id
+ */
 bt_peer_t *bt_peer_info(const bt_config_t *c, int peer_id);
+
+/** find peer by port
+ */
+bt_peer_t *find_peer_by_port(const bt_config_t *config, in_port_t port);
 
 #endif /* _BT_PARSE_H_ */

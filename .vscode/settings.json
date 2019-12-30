@@ -3,6 +3,8 @@
         "mtcp.h": "c",
         "config.h": "c",
         "socket.h": "c",
-        "in.h": "c"
+        "in.h": "c",
+        "packet.h": "c",
+        "bt_parse.h": "c"
     }
 }

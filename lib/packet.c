@@ -1,5 +1,6 @@
 #include<stdlib.h>
 #include<string.h>
+#include<stdio.h>
 #include "packet.h"
 /** return a string indicating the type of an integer
  */

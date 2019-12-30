@@ -80,9 +80,10 @@ int main(int argc, char **argv) {
   spiffy_sendto(fd, &packet, sizeof(data_packet_t), 0, (struct sockaddr *) &toaddr, sizeof(toaddr));
 
   // printf("Header sent: %d\n", atoi(argv[4]));
-  printf("Header sent:\n");
+  printf("Host %s:%d sent packet:\n", inet_ntoa(myaddr.sin_addr), ntohs(myaddr.sin_port));
+  printf("Header:\n");
   print_header(packet.header);
-  printf("data sent: %s\n", packet.data);
+  printf("data: %s\n", packet.data);
 
   return 0;
 }

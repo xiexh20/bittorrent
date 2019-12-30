@@ -30,7 +30,7 @@ typedef struct mtcp_conn
     seqnr_t last_ack;       // last acked packet, for out of order packets
     char acks;              // number of acks received: three duplicate ACKs will trigger fast retransmission
     acknr_t next_expect;    // expected sequence number of next packet, ack_num in receiver ACK packet, cumulative ack
-    dplist_t *sent_packets; // timestamps used for retransmission
+    dplist_t *sent_packets; // timestamps used for retransmission, data type: buf_packet_t, include time info
     dplist_t *recv_packets; // received packets
 } mtcp_conn_t;
 
@@ -57,7 +57,8 @@ int mtcp_send_packet(mtcp_conn_t* conn, data_packet_t* data_packet);
 /**
  * process received ACK packet, store into recv_packets list, update ack number
  * 
- * retransmission handled here?
+ * retransmission handled here? yes, retransmission triggered by 3 duplicate ACKs is started here
+ * time out retransmission is in main loop
  * 
  * new data transmission is initialized by the higher level process
  */

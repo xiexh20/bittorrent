@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <arpa/inet.h>
 
 #include "lib/spiffy.h"
 #include "lib/mtcp.h"
@@ -73,6 +74,7 @@ int main(int argc, char **argv)
             // printf("MAGIC: %d\n", ntohs((curr->header).magicnum));
             // printf("Version: %c\n", curr->header.version);
             // printf("packet_type: %c\n", curr->header.packet_type);
+            printf("Received data from: %s:%d\n", inet_ntoa(from.sin_addr), ntohs(from.sin_port));
             printf("Header received:\n");
             print_header(curr->header);
             printf("data received: %s\n", curr->data);

@@ -11,15 +11,23 @@
 #define HASH_LEN SHA1_HASH_SIZE         // the length of a chunk hashcode
 
 
-/* data struct for receiver */
+/* data struct for receiver and sender */
 typedef struct chunk_request
 {
     mtcp_conn_t * conn;
     uint8_t hashcode[HASH_LEN];    // the hashcode of the request chunk, set when sending GET packet
     uint8_t *buffer;        // buffer for the chunk, possibly a 512*1024 char
-    uint8_t *dp;            // data pointer, the position of next block of data to be sent/the position of next received data
+    uint8_t *dnext;            // data pointer, the position of next block of data to be sent/the position of next received data
+    uint8_t *dbase;          // for sender, the base pointer
+    time_t reqt;            // the time when sender receive the GET request or last time the receiver send the GTE request
+                            // this will be checked by the peer. receiver side: if time out, send GET packet again
 }chunk_request_t;
 
+
+// callback functions
+void *request_copy(void *src_element); 
+void request_free(void **element);
+int request_comp(void *x, void *y);
 
 /**
  * process received whohas packet
@@ -39,14 +47,15 @@ int mbt_process_whohas(bt_config_t * config, bt_peer_t * peer, data_packet_t * w
 
 
 /** process received IHAVE packet
- * send a GET to the host, set a timer to retransmit the GET packet, initialize a receiver buffer (chunk_request)
+ * send a GET to the host, initialize a receiver buffer (chunk_request)
  * required input:
  * a IHAVE packet
  * information of the peer who sent the IHAVE packet
- * 
+ * how to implement a timer for resending GET?
  * return: a status code
  * param: 
  * peer: host info(ip addr, port) of the peer who sent IHAVE packet
+ * request: the receiver buffer, to be initialized
  */
 int mbt_process_ihave(bt_peer_t * peer, chunk_request_t* request, data_packet_t * ihave_packet);
 

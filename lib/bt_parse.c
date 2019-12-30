@@ -75,6 +75,24 @@ bt_peer_t *bt_peer_info(const bt_config_t *config, int peer_id)
     return NULL;
 }
 
+/** find peer by port
+ */
+bt_peer_t *find_peer_by_port(const bt_config_t *config, in_port_t port)
+{
+    assert(config != NULL);
+
+    bt_peer_t *p;
+    for (p = config->peers; p != NULL; p = p->next)
+    {
+        if (p->addr.sin_port == port)
+        {
+            return p;
+        }
+    }
+    return NULL;
+
+}
+
 /**
  * parse command line input
  * 

@@ -2,13 +2,13 @@
 CC 		= gcc
 CFLAGS		= -g -Wall -DDEBUG
 SOS = lib/*.so	# all shared library files
-LIBS = -lsha -ldebug -lmtcp -lspiffy -ldplist
+LIBS = -lsha -ldebug -lmtcp -lspiffy -ldplist -lpacket -lchunk -lbt_parse
 LIBPATH = -lm -L./lib -Wl,-rpath=./lib
 LDFLAGS		= -lm
 TESTDEFS	= -DTESTING			# comment this out to disable debugging code
 OBJS		= peer.o bt_parse.o spiffy.o debug.o input_buffer.o chunk.o sha.o
 MK_CHUNK_OBJS   = make_chunks.o chunk.o sha.o
-COMFS = lib/libdebug.so lib/libmtcp.so lib/libsha.so lib/libspiffy.so lib/libdplist.so
+COMFS = lib/libdebug.so lib/libmtcp.so lib/libsha.so lib/libspiffy.so lib/libdplist.so lib/libpacket.so lib/libchunk.so lib/libbt_parse.so
 
 BINS            = peer make-chunks server client
 TESTBINS        = test_debug test_input_buffer
@@ -41,6 +41,10 @@ client: client.c $(COMFS)
 test_mtcp: test_mtcp.c $(COMFS)
 	gcc -g test_mtcp.c $(COMFS) $(LIBS) $(LIBPATH) -o test_mtcp
 
+btp_test: bt_parse_test.c $(COMFS)
+	gcc -g bt_parse_test.c $(COMFS) $(LIBS) $(LIBPATH) -o btp_test
+
+
 # compile shared library
 lib/libmtcp.so: lib/mtcp.c
 	gcc lib/mtcp.c -g -o lib/libmtcp.so -lm -fPIC -shared
@@ -56,6 +60,16 @@ lib/libspiffy.so: lib/spiffy.c
 
 lib/libdplist.so: lib/dplist.c
 	gcc lib/dplist.c -g -o lib/libdplist.so -lm -fPIC -shared
+
+lib/libpacket.so: lib/packet.c
+	gcc lib/packet.c -g -o lib/libpacket.so -lm -fPIC -shared
+
+lib/libchunk.so: lib/chunk.c
+	gcc lib/chunk.c -g -o lib/libchunk.so -lm -fPIC -shared
+
+lib/libbt_parse.so: lib/bt_parse.c
+	gcc lib/bt_parse.c -g -o lib/libbt_parse.so -lm -fPIC -shared
+
 
 clean:
 	rm -f *.o $(BINS) $(TESTBINS) $(SOS)
