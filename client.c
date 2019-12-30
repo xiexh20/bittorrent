@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include "lib/mtcp.h"
+#include <stdlib.h>
 
 #include "lib/spiffy.h"
 
@@ -38,9 +39,9 @@ int main(int argc, char **argv) {
   data_packet_t packet;
 
   assert(fd != 0);
-  if (argc < 4) {
+  if (argc != 6) {
     // printf("usage: %s <node id> <my port> <to port> <magic number>\n", argv[0]);
-    printf("usage: %s <magic number> <seq num> <ack num> <type>\n", argv[0]);
+    printf("usage: %s <magic number> <seq num> <ack num> <type> <data str>\n", argv[0]);
     return 1;
   }
 
@@ -56,6 +57,8 @@ int main(int argc, char **argv) {
   packet.header.ack_num = htonl(atoi(argv[3]));
   packet.header.header_len = sizeof(packet.header);
   packet.header.packet_type = *argv[4] - '0';   // read a char
+  // packet.data = malloc(10*sizeof(char));
+  memcpy(packet.data, argv[5], 10);
 
   // send init
   bzero(&myaddr, sizeof(myaddr));
@@ -79,6 +82,7 @@ int main(int argc, char **argv) {
   // printf("Header sent: %d\n", atoi(argv[4]));
   printf("Header sent:\n");
   print_header(packet.header);
+  printf("data sent: %s\n", packet.data);
 
   return 0;
 }

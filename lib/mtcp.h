@@ -11,8 +11,8 @@
 #include <sys/types.h>
 #include <time.h>
 
-typedef u_int seqnr_t;    // sequence number type
-typedef u_int acknr_t;  // ACK number type
+typedef uint32_t seqnr_t;    // sequence number type
+typedef uint32_t acknr_t;  // ACK number type
 
 typedef struct header_s {
   short magicnum;
@@ -20,19 +20,19 @@ typedef struct header_s {
   char packet_type;
   short header_len;
   short packet_len; 
-  u_int seq_num;
-  u_int ack_num;
+  seqnr_t seq_num;
+  acknr_t ack_num;
 } header_t;  
 
 
 #define BUFLEN 100
-#define DATALEN 13  // maximum data length
+#define DATALEN 1300  // maximum data length
 
 typedef struct data_packet
 {
     header_t header;
     // char data[BUFLEN];
-    char *data;
+    char data[DATALEN];
     // time_t ts;    // the timestamp when the packet was sent
 } data_packet_t;
 

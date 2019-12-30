@@ -75,6 +75,7 @@ int main(int argc, char **argv)
             // printf("packet_type: %c\n", curr->header.packet_type);
             printf("Header received:\n");
             print_header(curr->header);
+            printf("data received: %s\n", curr->data);
 
             
         }

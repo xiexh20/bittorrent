@@ -47,7 +47,7 @@ void *packet_copy(void *src_element)
     // new_packet->ts = tmp->ts;       // long type, copy directly
     new_packet->header = tmp->header;       // TODO: is this a deep copy?
 
-    new_packet->data = malloc(DATALEN*sizeof(char));
+    // new_packet->data = malloc(DATALEN*sizeof(char));
     printf("Src str:%s\n", tmp->data);
     memcpy(new_packet->data, tmp->data, DATALEN); 
     printf("Copied str:%s\n", new_packet->data);  
@@ -59,7 +59,7 @@ void *packet_copy(void *src_element)
 void packet_free(void **element)
 {
     data_packet_t * tmp = (data_packet_t*) (*element);
-    free(tmp->data);
+    // free(tmp->data);
     free(tmp);
 }
 /** 
@@ -84,7 +84,7 @@ void *buf_packet_copy(void *src_element)
     buf_packet_t *tmp = (buf_packet_t*) src_element;
     buf_packet_t *new_buf = malloc(sizeof(buf_packet_t));
     new_buf->packet.header = tmp->packet.header;
-    new_buf->packet.data = malloc(DATALEN*sizeof(char));
+    // new_buf->packet.data = malloc(DATALEN*sizeof(char));
     memcpy(new_buf->packet.data, tmp->packet.data, DATALEN);
     new_buf->ts = tmp->ts;
     return new_buf;
@@ -92,7 +92,7 @@ void *buf_packet_copy(void *src_element)
 void buf_packet_free(void **element)
 {
     buf_packet_t* tmp = (buf_packet_t*)(*element);
-    free(tmp->packet.data);
+    // free(tmp->packet.data);
     free(tmp);
 }
 int buf_packet_comp(void *x, void *y)

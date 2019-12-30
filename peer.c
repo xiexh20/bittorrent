@@ -8,11 +8,6 @@
  * Skeleton for 15-441 Project 2.
  *
  */
-
-#include "bt_parse.h"
-#include "debug.h"
-#include "input_buffer.h"
-#include "spiffy.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -26,6 +21,10 @@
 #include "config.h"
 #include "lib/dplist.h"
 #include "lib/mtcp.h"
+#include "bt_parse.h"
+#include "lib/debug.h"
+#include "input_buffer.h"
+#include "lib/spiffy.h"
 
 // typedef struct packet_info
 // {
@@ -112,6 +111,33 @@ void process_inbound_udp(int sock)
     printf("PROCESS_INBOUND_UDP SKELETON -- replace!\n"
            "Incoming message from %s:%d\n%s\n\n",
            inet_ntoa(from.sin_addr), ntohs(from.sin_port), buf);
+
+    switch (udp_packet->header.packet_type)
+    {
+    case 0:
+        // WHOHAS
+        break;
+    case 1:
+        //IHAVE
+        break;
+    case 2:
+        // GET request
+        break;
+    case 3:
+        // DATA
+
+        break;
+    case 4: 
+        // ACK
+        
+        break;
+    case 5:
+        // DENIED
+        break;
+    default:
+        printf("Not defined packet type, posibbly due to bit error.\n");
+        break;
+    }
 }
 
 /**
@@ -212,12 +238,21 @@ void *peer_node_copy(void *src_element)
     new_node->id = tmp->id;
     new_node->port = tmp->port;
     new_node->in_trans = tmp->in_trans;
+    new_node->sent_packets = tmp->sent_packets;
+    new_node->next_send = tmp->next_send;
+    new_node->last_ack = tmp->last_ack;
+    new_node->acks = tmp->acks;
+    new_node->next_expect = tmp->next_expect;
+    new_node->sent_packets = tmp->sent_packets; // not deep copy
+    new_node->recv_packets = tmp->recv_packets;
 
     return new_node;
 }
 void peer_node_free(void **element)
 {
     peer_node_t *tmp = (peer_node_t*) (*element);
+    dpl_free(&tmp->recv_packets, 1);
+    dpl_free(&tmp->sent_packets, 1);
     free(tmp);
 }
 int peer_node_comp(void *x, void *y)
