@@ -110,7 +110,7 @@ void process_inbound_udp(int sock, bt_config_t * config)
     case 1:
         {
             //IHAVE
-            chunk_request_t * down_request = NULL;
+            mbt_buf_t * down_request = NULL;
             mbt_process_ihave(peer, down_request, udp_packet);
             
             // TODO:  check return status,
@@ -121,7 +121,7 @@ void process_inbound_udp(int sock, bt_config_t * config)
     case 2:
         {
             // GET request
-            chunk_request_t * send_buf = NULL;
+            mbt_buf_t * send_buf = NULL;
             mbt_process_get(config, peer, send_buf, udp_packet);
 
             // TODO: check return status
@@ -130,14 +130,14 @@ void process_inbound_udp(int sock, bt_config_t * config)
         }
     case 3:
         {// DATA
-            chunk_request_t * recv_buf;
+            mbt_buf_t * recv_buf;
             // TODO: some functions to find correct recv_buf from recv_buffers
             mbt_process_data(recv_buf, udp_packet);
             break;
         }
     case 4: 
         {// ACK
-            chunk_request_t * send_buf;
+            mbt_buf_t * send_buf;
             //TODO: function to find correct send_buf from send_buffers
             mbt_process_data(send_buf, udp_packet);
             break;
