@@ -30,8 +30,9 @@ static const char *const _bt_optstring = "p:c:f:m:i:d:h";
  */
 void bt_init(bt_config_t *config, int argc, char **argv)
 {
-    bzero(config, sizeof(bt_config_t));
+    bzero(config, sizeof(bt_config_t)); // erase the data
 
+    // TODO: parse user input arguments
     strcpy(config->output_file, "output.dat");
     strcpy(config->peer_list_file, "nodes.map");
     config->argc = argc;
@@ -57,6 +58,8 @@ void bt_help()
                     "         -i <identity>     Which peer # am I?\n");
 }
 
+/** return information of peer with peer_id
+ */
 bt_peer_t *bt_peer_info(const bt_config_t *config, int peer_id)
 {
     assert(config != NULL);

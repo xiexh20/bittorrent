@@ -26,18 +26,18 @@ typedef struct bt_peer_s {
 } bt_peer_t;
 
 struct bt_config_s {
-  char  chunk_file[BT_FILENAME_LEN];
-  char  has_chunk_file[BT_FILENAME_LEN];
-  char  output_file[BT_FILENAME_LEN];
-  char  peer_list_file[BT_FILENAME_LEN];
-  int   max_conn;
-  short identity;
+  char  chunk_file[BT_FILENAME_LEN];  //.chunk, real data
+  char  has_chunk_file[BT_FILENAME_LEN];  //.haschunk file path, contain info of chunks for this peer
+  char  output_file[BT_FILENAME_LEN];   // output path for received chunks
+  char  peer_list_file[BT_FILENAME_LEN];  // nodes.map filepath, topology of the BitTorrent
+  int   max_conn;   // maximum number of TCP connection? 
+  short identity; // id of the peer
   unsigned short myport;
 
   int argc; 
   char **argv;
 
-  bt_peer_t *peers;
+  bt_peer_t *peers;   // a list of peers in the BitTorrent network
 };
 typedef struct bt_config_s bt_config_t;
 
