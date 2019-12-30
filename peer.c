@@ -39,14 +39,7 @@ typedef struct peer_node
     int id;     // peer id in nodes.map
     u_int32_t port;  // peer port number in nodes.map
     char in_trans;      // 1: transmitting data with this node FIXME: other status?
-    u_int32_t rtdelay;      // round trip delay in us TODO: implement sampleRTT to estimate RTT
-    seqnr_t send_base;    // sequence number of the oldest unacknowledged packet
-    seqnr_t next_send;    // sequence number of next packet
-    seqnr_t last_ack;     // last acked packet, for out of order packets
-    char acks;              // number of acks received: three duplicate ACKs will trigger fast retransmission
-    acknr_t next_expect;  // expected sequence number of next packet, ack_num in receiver ACK packet, cumulative ack
-    dplist_t *sent_packets;       // timestamps used for retransmission
-    dplist_t *recv_packets;          // received packets
+    mtcp_conn_t* conn;   // a TCP connection, NULL if no data is transmitting
 }peer_node_t;
 
 
@@ -238,21 +231,15 @@ void *peer_node_copy(void *src_element)
     new_node->id = tmp->id;
     new_node->port = tmp->port;
     new_node->in_trans = tmp->in_trans;
-    new_node->sent_packets = tmp->sent_packets;
-    new_node->next_send = tmp->next_send;
-    new_node->last_ack = tmp->last_ack;
-    new_node->acks = tmp->acks;
-    new_node->next_expect = tmp->next_expect;
-    new_node->sent_packets = tmp->sent_packets; // not deep copy
-    new_node->recv_packets = tmp->recv_packets;
-
+    
+    new_node->conn = mtcp_conn_copy(tmp->conn);
     return new_node;
+
 }
 void peer_node_free(void **element)
 {
     peer_node_t *tmp = (peer_node_t*) (*element);
-    dpl_free(&tmp->recv_packets, 1);
-    dpl_free(&tmp->sent_packets, 1);
+    mtcp_conn_free((void**)&tmp->conn);
     free(tmp);
 }
 int peer_node_comp(void *x, void *y)

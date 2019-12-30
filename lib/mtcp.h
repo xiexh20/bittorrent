@@ -8,58 +8,74 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <time.h>
 
-typedef uint32_t seqnr_t;    // sequence number type
-typedef uint32_t acknr_t;  // ACK number type
-
-typedef struct header_s {
-  short magicnum;
-  char version;
-  char packet_type;
-  short header_len;
-  short packet_len; 
-  seqnr_t seq_num;
-  acknr_t ack_num;
-} header_t;  
-
-
-#define BUFLEN 100
-#define DATALEN 1300  // maximum data length
-
-typedef struct data_packet
-{
-    header_t header;
-    // char data[BUFLEN];
-    char data[DATALEN];
-    // time_t ts;    // the timestamp when the packet was sent
-} data_packet_t;
-
+#include "packet.h"
+#include "dplist.h"
 
 // the struct used in to trace time
 typedef struct buf_packet
 {
-  data_packet_t packet;
-  time_t ts;    // the timestamp when the packet was sent
-}buf_packet_t;    // 
+    data_packet_t packet;
+    time_t ts;  // the timestamp when the packet was sent
+} buf_packet_t; //
 
-
-#define TYPE_LEN 10  // max length of the type string
-
-/** return a string indicating the type of an integer
- */
-char * decode_packet_type(char code);
-
-// callback functions used for data_packet list: received packets
-void *packet_copy(void *src_element); 
-void packet_free(void **element);
-int packet_comp(void *x, void *y);
+typedef struct mtcp_conn
+{
+    // information to maintain a TCP connection
+    u_int32_t rtdelay;      // round trip delay in us TODO: implement sampleRTT to estimate RTT
+    seqnr_t send_base;      // sequence number of the oldest unacknowledged packet
+    seqnr_t next_send;      // sequence number of next packet
+    seqnr_t last_ack;       // last acked packet, for out of order packets
+    char acks;              // number of acks received: three duplicate ACKs will trigger fast retransmission
+    acknr_t next_expect;    // expected sequence number of next packet, ack_num in receiver ACK packet, cumulative ack
+    dplist_t *sent_packets; // timestamps used for retransmission
+    dplist_t *recv_packets; // received packets
+} mtcp_conn_t;
 
 // callback functions used for buf_packet list: sent packets
-void *buf_packet_copy(void *src_element); 
+void *buf_packet_copy(void *src_element);
 void buf_packet_free(void **element);
 int buf_packet_comp(void *x, void *y);
+
+// callback functions for mtco_conn list
+void *mtcp_conn_copy(void *src_element);
+void mtcp_conn_free(void **element);
+int mtcp_conn_comp(void *x, void *y);
+
+// core functions for reliable data transfer
+
+
+/* sender side functions */
+/**
+ * send a data packet and update information in the connection: seqnum, ack num etc.
+ * as well as the sent_packets list
+ */
+int mtcp_send_packet(mtcp_conn_t* conn, data_packet_t* data_packet);
+
+/**
+ * process received ACK packet, store into recv_packets list, update ack number
+ * 
+ * retransmission handled here?
+ * 
+ * new data transmission is initialized by the higher level process
+ */
+int mtcp_process_ack(mtcp_conn_t* conn, data_packet_t* ack_packet);
+
+/* sender side functions end*/
+
+
+/* receiver side functions */
+/**
+ * process received data packet, update rev_packets list, send ACK back
+ */
+int mtcp_process_data(mtcp_conn_t* conn, data_packet_t* data_packet);
+
+/**
+ * send an ACK packet, this function should only be called within mtcp.h
+ */
+int mtcp_send_ack(mtcp_conn_t* conn, data_packet_t* ack_packet);
+/* receiver side functions end */
 
 
 #endif
