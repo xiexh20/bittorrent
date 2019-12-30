@@ -60,8 +60,8 @@ void print_header(header_t header)
 
     printf("header length:%d\n", ntohs(header.header_len));
     printf("packet length: %d\n", ntohs(header.packet_len));
-    printf("sequence number: %d\n", ntohs(header.seq_num));
-    printf("ACK number: %d\n", ntohs(header.ack_num));
+    printf("sequence number: %d\n", ntohl(header.seq_num));
+    printf("ACK number: %d\n", ntohl(header.ack_num));
     fflush(stdout);
 }
 

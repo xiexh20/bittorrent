@@ -4,7 +4,6 @@
 
 #include "mtcp.h"
 
-
 /** return a string indicating the type of an integer
  */
 char * decode_packet_type(char code)
@@ -45,11 +44,13 @@ void *packet_copy(void *src_element)
 {
     data_packet_t * tmp = (data_packet_t*) src_element;
     data_packet_t *new_packet = malloc(sizeof(data_packet_t));
-    new_packet->ts = tmp->ts;       // long type, copy directly
+    // new_packet->ts = tmp->ts;       // long type, copy directly
     new_packet->header = tmp->header;       // TODO: is this a deep copy?
 
     new_packet->data = malloc(DATALEN*sizeof(char));
-    memcpy(new_packet->data, tmp->data, DATALEN);   
+    printf("Src str:%s\n", tmp->data);
+    memcpy(new_packet->data, tmp->data, DATALEN); 
+    printf("Copied str:%s\n", new_packet->data);  
     // FIXME: copy data correctly
     return new_packet;
 }
@@ -76,4 +77,27 @@ int packet_comp(void *x, void *y)
         return 1;
     }
     return 0;
+}
+
+void *buf_packet_copy(void *src_element)
+{
+    buf_packet_t *tmp = (buf_packet_t*) src_element;
+    buf_packet_t *new_buf = malloc(sizeof(buf_packet_t));
+    new_buf->packet.header = tmp->packet.header;
+    new_buf->packet.data = malloc(DATALEN*sizeof(char));
+    memcpy(new_buf->packet.data, tmp->packet.data, DATALEN);
+    new_buf->ts = tmp->ts;
+    return new_buf;
+}
+void buf_packet_free(void **element)
+{
+    buf_packet_t* tmp = (buf_packet_t*)(*element);
+    free(tmp->packet.data);
+    free(tmp);
+}
+int buf_packet_comp(void *x, void *y)
+{
+    buf_packet_t *x1 = (buf_packet_t*) x;
+    buf_packet_t *y1 = (buf_packet_t*) y;
+    return packet_comp(&x1->packet, &y1->packet);
 }

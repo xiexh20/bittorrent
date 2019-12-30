@@ -33,8 +33,16 @@ typedef struct data_packet
     header_t header;
     // char data[BUFLEN];
     char *data;
-    time_t ts;    // the timestamp when the packet was sent
+    // time_t ts;    // the timestamp when the packet was sent
 } data_packet_t;
+
+
+// the struct used in to trace time
+typedef struct buf_packet
+{
+  data_packet_t packet;
+  time_t ts;    // the timestamp when the packet was sent
+}buf_packet_t;    // 
 
 
 #define TYPE_LEN 10  // max length of the type string
@@ -43,9 +51,15 @@ typedef struct data_packet
  */
 char * decode_packet_type(char code);
 
-// callback functions used for packet list
+// callback functions used for data_packet list: received packets
 void *packet_copy(void *src_element); 
 void packet_free(void **element);
 int packet_comp(void *x, void *y);
+
+// callback functions used for buf_packet list: sent packets
+void *buf_packet_copy(void *src_element); 
+void buf_packet_free(void **element);
+int buf_packet_comp(void *x, void *y);
+
 
 #endif

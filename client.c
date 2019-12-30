@@ -44,6 +44,20 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  
+  
+  packet.header.magicnum = htons(atoi(argv[1]));
+  memset(&(packet.data), 0, BUFLEN);      // FIXME: why this will clear toaddr???
+
+  // for debug
+  packet.header.version = 'A';
+  packet.header.packet_type = 'B';
+  packet.header.seq_num = htonl(atoi(argv[2]));
+  packet.header.ack_num = htonl(atoi(argv[3]));
+  packet.header.header_len = sizeof(packet.header);
+  packet.header.packet_type = *argv[4] - '0';   // read a char
+
+  // send init
   bzero(&myaddr, sizeof(myaddr));
   myaddr.sin_family = AF_INET;
   inet_aton("127.0.0.1", &myaddr.sin_addr);
@@ -59,17 +73,6 @@ int main(int argc, char **argv) {
   // toaddr.sin_port = htons(atoi(argv[3]));
   toaddr.sin_port = htons(atoi("48001"));
   toaddr.sin_family = AF_INET;
-  
-  packet.header.magicnum = htons(atoi(argv[1]));
-  memset(&(packet.data), 0, BUFLEN);  
-
-  // for debug
-  packet.header.version = 'A';
-  packet.header.packet_type = 'B';
-  packet.header.seq_num = htons(atoi(argv[2]));
-  packet.header.ack_num = htons(atoi(argv[3]));
-  packet.header.header_len = sizeof(packet.header);
-  packet.header.packet_type = *argv[4] - '0';   // read a char
 
   spiffy_sendto(fd, &packet, sizeof(data_packet_t), 0, (struct sockaddr *) &toaddr, sizeof(toaddr));
 

@@ -46,7 +46,7 @@ typedef struct peer_node
     seqnr_t last_ack;     // last acked packet, for out of order packets
     char acks;              // number of acks received: three duplicate ACKs will trigger fast retransmission
     acknr_t next_expect;  // expected sequence number of next packet, ack_num in receiver ACK packet, cumulative ack
-    dplist_t *sent_packets;       // timestamps and sequence number pf sent packets
+    dplist_t *sent_packets;       // timestamps used for retransmission
     dplist_t *recv_packets;          // received packets
 }peer_node_t;
 
