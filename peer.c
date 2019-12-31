@@ -57,7 +57,9 @@ int main(int argc, char **argv)
     bt_init(&config, argc, argv); // configure map, chunks, file location etc.
 
     // my own variables init
-    peer_list = dpl_create(&peer_node_copy, &peer_node_free, &peer_node_comp);
+    // peer_list = dpl_create(&peer_node_copy, &peer_node_free, &peer_node_comp);
+    send_buffers = dpl_create(&mbt_buf_copy, &mbt_buf_free, &mbt_buf_comp);
+    recv_buffers = dpl_create(&mbt_buf_copy, &mbt_buf_free, &mbt_buf_comp);
 
     DPRINTF(DEBUG_INIT, "peer.c main beginning\n");
 
@@ -76,7 +78,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    peer_run(&config); // run the peer (accept user input)
+    peer_run(&config); // run the peer (accept user input and listen to UDP packet)
     return 0;
 }
 
@@ -130,15 +132,15 @@ void process_inbound_udp(int sock, bt_config_t * config)
         }
     case 3:
         {// DATA
-            mbt_buf_t * recv_buf;
-            // TODO: some functions to find correct recv_buf from recv_buffers
+            mbt_buf_t * recv_buf = find_buf_by_id(recv_buffers, peer->id);
+            // TODO: error handling
             mbt_process_data(recv_buf, udp_packet);
             break;
         }
     case 4: 
         {// ACK
-            mbt_buf_t * send_buf;
-            //TODO: function to find correct send_buf from send_buffers
+            mbt_buf_t * send_buf = find_buf_by_id(send_buffers, peer->id);
+            // TODO: return error handling
             mbt_process_data(send_buf, udp_packet);
             break;
         }

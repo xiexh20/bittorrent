@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "mtcp.h"
+#include "debug.h"
 
 
 void *buf_packet_copy(void *src_element)
@@ -70,3 +71,76 @@ int mtcp_conn_comp(void *x, void *y)
     return 0;
 
 }
+
+/* sender side functions */
+/**
+ * send a data packet and update information in the connection: seqnum, ack num etc.
+ * as well as the sent_packets list
+ * seq and ack num logic is not handled here
+ * this packet only do insertion and send
+ */
+int mtcp_send_packet(mtcp_conn_t* conn, data_packet_t* data_packet, char isnew)
+{
+    // add the data packet to the connection send list
+    if(isnew==TRUE){
+        dpl_insert_at_index(conn->sent_packets, data_packet, LIST_END, 0);  // insert the packet into the end of the list
+    }
+    
+    return MTCP_SENT_SUCCESS;
+}
+
+/**
+ * process received ACK packet, store into recv_packets list, update ack number
+ * 
+ * retransmission handled here? yes, retransmission triggered by 3 duplicate ACKs is started here
+ * time out retransmission is in main loop
+ * 
+ * new data transmission is initialized by the higher level process
+ */
+int mtcp_process_ack(mtcp_conn_t* conn, ack_packet_t* ack_packet)
+{
+    // convert network number into host number
+    acknr_t ack = ntohl(ack_packet->header.ack_num);
+    if(ack==conn->last_ack){
+        // duplicate ack
+        conn->acks++;
+        if(conn->acks==3){
+            // retransmit the oldest packet
+            data_packet_t *old = dpl_get_element_at_index(conn->sent_packets, 0);   // get the oldest packet
+            mtcp_send_packet(conn, old, FALSE); // send an old packet, do not add it into the list
+            return MTCP_RESEND;
+        }
+        else{
+            // check if the list buffer is full
+            if(dpl_size(conn->sent_packets)==WINDOW_SIZE){
+                return MTCP_SEND_WAIT;  // wait 
+            }
+
+            // still some space available for the buffer list
+            return MTCP_SEND_CONT;
+        }
+    }
+    else if(ack==conn->last_ack+1){
+        // an inoder ack packet, remove the first data packet buffer
+        dpl_remove_at_index(conn->sent_packets, 0, FALSE);  // do not free element at this moment
+        conn->last_ack = ack;
+        conn->acks = 1;
+        conn->send_base++;  // move window forward
+        conn->next_send++;  // FIXME: is this correct?
+        return MTCP_SEND_CONT;    // tell the MBT to load new data into the buffer
+    }
+    else if(ack>conn->last_ack+1)
+    {
+        // several packets are acked
+        //TODO: remove all packets that have seqnr<=ack
+        //update information in the conn_t
+        return MTCP_SEND_CONT; // tell the MBT to load new data
+    }
+    else{
+        // should not be possible since the receiver only send next expect seq
+        DPRINTF("An impossible case in mtcp_process_ack, debug it!\n");
+        return MTCP_ERROR;
+    }
+}
+
+/* sender side functions end*/

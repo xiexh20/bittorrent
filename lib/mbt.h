@@ -9,7 +9,26 @@
 #include "bt_parse.h"
 
 #define HASH_LEN SHA1_HASH_SIZE         // the length of a chunk hashcode
+#define HASH_EQUAL 0
+#define HASH_NOT_EQUAL 1
 
+// function return status code
+#define MBT_SUCCESS 0       // successfully processed the packet
+#define MBT_IHAVE_SENT 1    // a IHAVE packet was sent out
+#define MBT_GET_SENT 2      // a GET packet was sent out
+#define MBT_DATA_SENT 3     // new data sent out, different from resend
+#define MBT_ACK_SENT 4
+#define MBT_DENIED_SENT 5   // a DENIED packet was sent out
+#define MBT_NO_CHUNK 11     // in response to the WHOHAS packet
+
+#define MBT_SEND_DONE  30  // this chunk has been transmitted successfully
+#define MBT_RESEND  31      // resent a data packet
+#define MBT_SEND_FAIL 32   // an ongoing transmission was terminated by some error
+
+#define MBT_RECV_DONE 40    // a chunk has been downloaded successfully
+#define MBT_RECV_CONT 41    // continuing downloading
+
+typedef uint8_t hash_type;
 
 /* data struct for receiver and sender */
 typedef struct mbt_buf
@@ -29,6 +48,12 @@ typedef struct mbt_buf
 void *mbt_buf_copy(void *src_element); 
 void mbt_buf_free(void **element);
 int mbt_buf_comp(void *x, void *y);
+
+// assistant functions
+/**
+ * construct a temprary mbt_buf variable and call dplist functions to find buf
+ */
+mbt_buf_t * find_buf_by_id(dplist_t * buf_list, short id);
 
 /**
  * process received whohas packet
@@ -56,9 +81,9 @@ int mbt_process_whohas(bt_config_t * config, bt_peer_t * peer, data_packet_t * w
  * return: a status code
  * param: 
  * peer: host info(ip addr, port) of the peer who sent IHAVE packet
- * request: the receiver buffer, to be initialized
+ * recv_buf: the receiver buffer, to be initialized
  */
-int mbt_process_ihave(bt_peer_t * peer, mbt_buf_t* request, data_packet_t * ihave_packet);
+int mbt_process_ihave(bt_peer_t * peer, mbt_buf_t* recv_buf, data_packet_t * ihave_packet);
 
 /** process received GET packet
  * parse the chunks file and initialize a MTCP transmission: mtcp_conn, etc...
@@ -71,10 +96,10 @@ int mbt_process_ihave(bt_peer_t * peer, mbt_buf_t* request, data_packet_t * ihav
  * after this, the peer is in transmission status with another peer
  * 
  * params: 
- * request: an empty chunk of data to be filled with the filepath provied by config, a mtcp_conn to be initialized
+ * send_buf: an empty chunk of data to be filled with the filepath provied by config, a mtcp_conn to be initialized
  */
 int mbt_process_get(bt_config_t* config, bt_peer_t* peer,
-            mbt_buf_t * request, data_packet_t *get_packet);
+            mbt_buf_t * send_buf, data_packet_t *get_packet);
 
 
 /** process received DATA packet
@@ -85,13 +110,13 @@ int mbt_process_get(bt_config_t* config, bt_peer_t* peer,
  * a mtcp_conn
  * a buffer of all downloaded data
  * hashcode of the chunk (from the GET packet that initialize the transmission) 
- * -->> a list of request? or a struct of chunk_request, contains mtcp_conn?
+ * -->> a list of send_buf? or a struct of chunk_send_buf, contains mtcp_conn?
  * return: status code--sucess, done, or error
  * 
  * params:
- * request: a request chunk contains received data and information of the mtcp_conn
+ * recv_buf: a send_buf chunk contains received data and information of the mtcp_conn
  */
-int mbt_process_data(mbt_buf_t* request, data_packet_t * data_packet);
+int mbt_process_data(mbt_buf_t* recv_buf, data_packet_t * data_packet);
 
 /** process received ACK packet
  * call mtcp_process_ack to process the packet
@@ -105,6 +130,6 @@ int mbt_process_data(mbt_buf_t* request, data_packet_t * data_packet);
  * return: status code
  * in transmission, sent done, error
  */
-int mbt_process_ack(mbt_buf_t* request, ack_packet_t * ack_packet);
+int mbt_process_ack(mbt_buf_t* send_buf, ack_packet_t * ack_packet);
 
 #endif

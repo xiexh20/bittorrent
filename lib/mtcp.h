@@ -13,6 +13,29 @@
 #include "packet.h"
 #include "dplist.h"
 
+// MTCP configs
+#define LIST_END 9        // the end index of any lists
+#define WINDOW_SIZE 8       // MTCP sliding window size
+
+// function return status code
+
+// return status for mtcp_process_data
+#define MTCP_OLD_DATA    29   // an old data packet was received (out of order)
+#define MTCP_INORDER_NEW   30 // a new in order data packet 
+#define MTCP_OUTORDER_NEW  31 // a new out of order packet
+
+// return status for mtcp_process_ack
+#define MTCP_SENT_SUCCESS  0
+#define MTCP_RESEND  41
+// #define MTCP_INORDER_ACK 40
+#define MTCP_SEND_WAIT 42   // send list buffer is full, wait
+#define MTCP_SEND_CONT 40   // tell MBT to continue sending
+
+#define TRUE 1
+#define FALSE 0
+
+#define MTCP_ERROR -1;
+
 // the struct used in to trace time
 typedef struct buf_packet
 {
@@ -24,14 +47,19 @@ typedef struct mtcp_conn
 {
     // information to maintain a TCP connection
     struct sockaddr_in socket;  //IP:port
-    u_int32_t rtdelay;      // round trip delay in us TODO: implement sampleRTT to estimate RTT
+    
+    // for receiver
+    acknr_t next_expect;    // expected sequence number of next packet, ack_num in receiver ACK packet, cumulative ack
+    dplist_t *recv_packets; // received packets
+
+    // for sender:
+    dplist_t *sent_packets; // timestamps used for retransmission, data type: buf_packet_t, include time info
+    acknr_t last_ack;       // last acked packet, for out of order packets
+    char acks;              // number of acks received: three duplicate ACKs will trigger fast retransmission
     seqnr_t send_base;      // sequence number of the oldest unacknowledged packet
     seqnr_t next_send;      // sequence number of next packet
-    seqnr_t last_ack;       // last acked packet, for out of order packets
-    char acks;              // number of acks received: three duplicate ACKs will trigger fast retransmission
-    acknr_t next_expect;    // expected sequence number of next packet, ack_num in receiver ACK packet, cumulative ack
-    dplist_t *sent_packets; // timestamps used for retransmission, data type: buf_packet_t, include time info
-    dplist_t *recv_packets; // received packets
+    u_int32_t rtdelay;      // round trip delay in us TODO: implement sampleRTT to estimate RTT
+
 } mtcp_conn_t;
 
 // callback functions used for buf_packet list: sent packets
@@ -52,7 +80,7 @@ int mtcp_conn_comp(void *x, void *y);
  * send a data packet and update information in the connection: seqnum, ack num etc.
  * as well as the sent_packets list
  */
-int mtcp_send_packet(mtcp_conn_t* conn, data_packet_t* data_packet);
+int mtcp_send_packet(mtcp_conn_t* conn, data_packet_t* data_packet, char isnew);
 
 /**
  * process received ACK packet, store into recv_packets list, update ack number
